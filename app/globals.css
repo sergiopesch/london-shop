@@ -1,0 +1,174 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-rgb: 17, 24, 39;
+
+  /* Improved performance by using hardware acceleration */
+  --webkit-font-smoothing: antialiased;
+  --moz-osx-font-smoothing: grayscale;
+}
+
+/* Apply base styles */
+html {
+  scroll-behavior: smooth;
+  text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  overflow-x: hidden;
+  min-height: 100vh;
+  /* Prevent layout shifts */
+  padding-right: 0 !important;
+  /* Improve text rendering */
+  text-rendering: optimizeSpeed;
+}
+
+/* Optimize image rendering */
+img {
+  image-rendering: auto;
+  max-width: 100%;
+  height: auto;
+  /* Prevent layout shifts */
+  content-visibility: auto;
+}
+
+/* Optimize transitions */
+@layer utilities {
+  .transition-fast {
+    transition-duration: 150ms;
+  }
+
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-opacity {
+    will-change: opacity;
+  }
+
+  .h-18 {
+    height: 4.5rem; /* 72px */
+  }
+
+  .h-20 {
+    height: 5rem; /* 80px */
+  }
+}
+
+/* Custom styles for pages with hero images */
+.hero-page {
+  @apply relative min-h-screen;
+}
+
+.hero-page::before {
+  content: "";
+  @apply absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-transparent z-10 pointer-events-none;
+}
+
+/* Loading states */
+.skeleton {
+  @apply bg-gray-800 animate-pulse rounded;
+}
+
+/* Animations - optimized for performance */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out forwards;
+  will-change: opacity;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out forwards;
+  will-change: transform;
+}
+
+/* Improve focus styles for accessibility */
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-red-500;
+}
+
+/* Improve scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500;
+}
+
+/* Prevent layout shifts */
+.content-wrapper {
+  @apply min-h-screen;
+}
+
+/* Optimize content loading */
+.content-visibility-auto {
+  content-visibility: auto;
+}
+
+/* Optimize image loading */
+.image-rendering-crisp {
+  image-rendering: crisp-edges;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
