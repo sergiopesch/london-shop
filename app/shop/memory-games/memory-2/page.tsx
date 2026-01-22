@@ -24,7 +24,7 @@ export default function UndergroundMemoryGamePage() {
   const { addItem } = useCart()
 
   // Define images
-  const colorImages = useMemo(
+  const colorImages: Record<string, string> = useMemo(
     () => ({
       Multicolor: "/products/memory-underground.png",
     }),

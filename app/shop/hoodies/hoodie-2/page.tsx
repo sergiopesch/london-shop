@@ -24,7 +24,7 @@ export default function UndergroundHoodiePage() {
   const { addItem } = useCart()
 
   // Define color images mapping - Underground hoodie only in white
-  const colorImages = useMemo(
+  const colorImages: Record<string, string> = useMemo(
     () => ({
       White: "/products/underground-hoodie.png",
     }),

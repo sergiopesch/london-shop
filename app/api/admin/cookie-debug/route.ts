@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 
 export async function GET() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const adminCookie = cookieStore.get("london-shop-admin-session")
 
   return NextResponse.json({
@@ -12,7 +12,7 @@ export async function GET() {
           value: adminCookie.value,
         }
       : null,
-    allCookies: cookieStore.getAll().map((c) => c.name),
+    allCookies: cookieStore.getAll().map((c: { name: string }) => c.name),
   })
 }
 

@@ -24,7 +24,7 @@ export default function TShirtProductPage() {
   const { addItem } = useCart()
 
   // Define color images mapping
-  const colorImages = useMemo(
+  const colorImages: Record<string, string> = useMemo(
     () => ({
       White: "/products/white-tshirt.png",
       Black: "/products/black-tshirt.png", // Updated to use the new black t-shirt image

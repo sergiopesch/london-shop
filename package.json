@@ -6,9 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
@@ -37,13 +41,19 @@
     "@radix-ui/react-toggle": "^1.1.1",
     "@radix-ui/react-toggle-group": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.6",
+    "@supabase/supabase-js": "latest",
+    "@tailwindcss/container-queries": "latest",
+    "@tanstack/react-query": "latest",
+    "@tanstack/react-query-devtools": "latest",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
+    "framer-motion": "latest",
     "input-otp": "1.4.1",
+    "js-cookie": "latest",
     "lucide-react": "^0.454.0",
     "next": "15.1.0",
     "next-themes": "^0.4.4",
@@ -57,21 +67,23 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.6",
-    "zod": "latest",
-    "@emotion/is-prop-valid": "latest",
-    "@tanstack/react-query": "latest",
-    "framer-motion": "latest",
-    "js-cookie": "latest",
-    "@tanstack/react-query-devtools": "latest",
-    "@tailwindcss/container-queries": "latest",
-    "@supabase/supabase-js": "latest"
+    "zod": "latest"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.3",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.1.2",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.5.9",
+    "jsdom": "^27.4.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.17"
   }
 }

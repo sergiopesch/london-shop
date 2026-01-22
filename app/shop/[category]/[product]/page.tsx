@@ -6,8 +6,8 @@ import { notFound } from "next/navigation"
 import { Heart, Share2 } from "lucide-react"
 import { getProduct } from "@/lib/products"
 
-export default function ProductPage({ params }: { params: { category: string; product: string } }) {
-  const { category, product } = params
+export default async function ProductPage({ params }: { params: Promise<{ category: string; product: string }> }) {
+  const { category, product } = await params
 
   // Get product data
   const productInfo = getProduct(category, product)

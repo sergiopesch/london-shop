@@ -66,10 +66,9 @@ export default function SettingsPage() {
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
       // Success
-      setPasswordSuccess("Password updated successfully")(
-        // Clear form
-        e.target as HTMLFormElement,
-      ).reset()
+      setPasswordSuccess("Password updated successfully")
+      // Clear form
+      ;(e.target as HTMLFormElement).reset()
     } catch (error) {
       console.error("Error updating password:", error)
       setPasswordError(error instanceof Error ? error.message : "Failed to update password. Please try again.")

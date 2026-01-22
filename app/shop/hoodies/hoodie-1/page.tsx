@@ -32,7 +32,7 @@ export default function HoodieProductPage() {
   const { addItem } = useCart()
 
   // Define color images mapping
-  const colorImages = useMemo(
+  const colorImages: Record<string, string> = useMemo(
     () => ({
       White: "/products/white-hoodie.png",
       Black: "/products/black-hoodie.png",

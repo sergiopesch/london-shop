@@ -1,6 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import type { Metadata, Viewport } from "next"
 import "./globals.css"
 import { CartProvider } from "@/context/cart-context"
 import { Cart } from "@/components/cart"
@@ -8,20 +7,17 @@ import { Toaster } from "@/components/ui/toaster"
 import { ReactQueryProvider } from "@/lib/react-query"
 import { AuthProvider } from "@/contexts/auth-context"
 
-// Optimize font loading
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  preload: true,
-  variable: "--font-inter",
-  fallback: ["system-ui", "sans-serif"],
-})
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: "#ff0000",
+}
 
 export const metadata: Metadata = {
   title: "London Shop - Unique London-themed Merchandise",
   description: "Find unique London-themed merchandise including hoodies, t-shirts, memory cards, and mugs.",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes",
-  themeColor: "#ff0000",
   metadataBase: new URL("https://londonshop.ai"),
   openGraph: {
     title: "London Shop - Unique London-themed Merchandise",
@@ -31,7 +27,7 @@ export const metadata: Metadata = {
     locale: "en_GB",
     type: "website",
   },
-    generator: 'v0.dev'
+  generator: "v0.dev",
 }
 
 export default function RootLayout({
@@ -40,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} scroll-smooth`}>
+    <html lang="en" className="scroll-smooth">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -61,7 +57,3 @@ export default function RootLayout({
     </html>
   )
 }
-
-
-
-import './globals.css'

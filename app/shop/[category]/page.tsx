@@ -5,8 +5,8 @@ import Image from "next/image"
 import { notFound } from "next/navigation"
 import { getProductsByCategory, getCategories } from "@/lib/products"
 
-export default function CategoryPage({ params }: { params: { category: string } }) {
-  const category = params.category
+export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
+  const { category } = await params
 
   // Get all categories
   const categories = getCategories()
