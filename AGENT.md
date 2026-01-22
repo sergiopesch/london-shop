@@ -97,15 +97,15 @@ export async function serverAction() {
 ## State Management Rules
 
 ### Cart State
-- Use `useCart()` hook - don't create parallel cart state
+- Use `useCart()` hook from `context/cart-context.tsx` - don't create parallel cart state
 - Cart persists to localStorage automatically
 
 ### Server Data
-- Use TanStack React Query for fetching
+- Use TanStack React Query for fetching (provider in `lib/react-query.tsx`)
 - Don't duplicate data in local state
 
 ### Auth State
-- Use existing auth context
+- Use `useAuth()` hook from `contexts/auth-context.tsx`
 - Don't create new auth mechanisms
 
 ## Testing Requirements
@@ -113,9 +113,11 @@ export async function serverAction() {
 Before submitting changes:
 
 ```bash
-pnpm build      # Must pass without errors
-pnpm lint       # Must pass without errors
-pnpm test       # Must pass all tests
+pnpm build           # Must pass without errors
+pnpm lint            # Must pass without errors (no warnings either)
+pnpm test            # Must pass all tests
+pnpm test:watch      # Use during development for continuous testing
+pnpm test:coverage   # Check test coverage
 ```
 
 ## Common Gotchas
@@ -140,11 +142,12 @@ pnpm test       # Must pass all tests
 ## Deployment Checklist
 
 - [ ] Build passes: `pnpm build`
-- [ ] Lint passes: `pnpm lint`
-- [ ] Tests pass: `pnpm test`
+- [ ] Lint passes with no warnings: `pnpm lint`
+- [ ] All tests pass: `pnpm test`
 - [ ] No console.log statements in production code
-- [ ] Environment variables documented
+- [ ] Environment variables documented in `.env.example`
 - [ ] No hardcoded secrets
+- [ ] TypeScript strict mode errors resolved
 
 ## Quick Reference
 

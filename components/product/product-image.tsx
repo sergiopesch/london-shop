@@ -17,10 +17,11 @@ export const ProductImage = memo(function ProductImage(props: ProductImageProps)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Set initial image
+  // Set initial image on mount only
   useEffect(() => {
     const initialImage = colorImages[selectedColor] || Object.values(colorImages)[0] || ""
     setCurrentImage(initialImage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Handle color change

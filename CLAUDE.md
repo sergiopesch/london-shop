@@ -14,13 +14,14 @@ London Shop is a Next.js 15 e-commerce application selling London-themed merchan
 - **Database**: Supabase (optional - app works without it)
 - **Forms**: React Hook Form + Zod validation
 - **Animation**: Framer Motion
+- **Testing**: Vitest with React Testing Library
 
 ## Project Structure
 
 ```
 app/                    # Next.js App Router pages
 ├── api/               # API routes
-│   ├── admin/         # Admin authentication endpoints
+│   ├── admin/         # Admin authentication endpoints (login, logout, check)
 │   ├── customers/     # Customer data endpoint
 │   └── feedback/      # Feedback data endpoint
 ├── admin/             # Admin dashboard pages
@@ -39,10 +40,13 @@ lib/                   # Utility functions and logic
 ├── auth.ts            # Server-side admin authentication
 ├── supabase.ts        # Database client (handles missing config gracefully)
 ├── products.ts        # Product data and search functions
+├── products.test.ts   # Product utility tests
 └── utils.ts           # General utilities (cn function)
 
 context/               # React Context providers
-├── cart-context.tsx   # Shopping cart state (localStorage persisted)
+└── cart-context.tsx   # Shopping cart state (localStorage persisted)
+
+contexts/              # Additional React Context providers
 └── auth-context.tsx   # Auth state management
 
 hooks/                 # Custom React hooks
@@ -77,7 +81,7 @@ pnpm test       # Run tests
 ### State Management
 
 - **Cart**: Use `useCart()` hook from `context/cart-context.tsx`
-- **Server State**: Use TanStack React Query for data fetching
+- **Server State**: Use TanStack React Query for data fetching (provider in `lib/react-query.tsx`)
 - **Auth**: Use `useAuth()` hook from `contexts/auth-context.tsx`
 
 ### API Routes
@@ -98,8 +102,13 @@ Supabase is optional. The app handles missing configuration gracefully:
 Copy `.env.example` to `.env.local` and configure:
 
 ```env
+# Supabase Configuration (optional - app works without these)
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+
+# Admin Credentials (change these in production!)
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your-secure-password
 ```
 
 ## Admin Access
@@ -112,10 +121,12 @@ The admin dashboard is at `/admin`. Authentication uses cookie-based sessions.
 
 Run tests with:
 ```bash
-pnpm test
+pnpm test           # Run tests once
+pnpm test:watch     # Run tests in watch mode
+pnpm test:coverage  # Run tests with coverage report
 ```
 
-Test files are located alongside their source files with `.test.ts` or `.test.tsx` extensions.
+Test files are located alongside their source files with `.test.ts` or `.test.tsx` extensions. The project uses Vitest with React Testing Library for component testing.
 
 ## Common Tasks
 

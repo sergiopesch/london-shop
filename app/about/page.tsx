@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { ResponsiveNav } from "@/components/responsive-nav"
 import { SiteFooter } from "@/components/site-footer"
 import Image from "next/image"
@@ -12,10 +12,15 @@ export default function AboutPage() {
   const y = useTransform(scrollYProgress, [0, 0.2], [0, -50])
 
   const [activeSection, setActiveSection] = useState(0)
-  const sectionRefs = [useRef(null), useRef(null), useRef(null), useRef(null)]
+  const sectionRefsContainer = useRef<(HTMLDivElement | null)[]>([null, null, null, null])
+
+  const setSectionRef = useCallback((index: number) => (el: HTMLDivElement | null) => {
+    sectionRefsContainer.current[index] = el
+  }, [])
 
   // Handle section visibility
   useEffect(() => {
+    const sectionRefs = sectionRefsContainer.current
     const observers = sectionRefs.map((ref, index) => {
       const observer = new IntersectionObserver(
         ([entry]) => {
@@ -26,8 +31,8 @@ export default function AboutPage() {
         { threshold: 0.5, rootMargin: "-10% 0px" },
       )
 
-      if (ref.current) {
-        observer.observe(ref.current)
+      if (ref) {
+        observer.observe(ref)
       }
 
       return observer
@@ -35,8 +40,8 @@ export default function AboutPage() {
 
     return () => {
       observers.forEach((observer, index) => {
-        if (sectionRefs[index].current) {
-          observer.unobserve(sectionRefs[index].current)
+        if (sectionRefs[index]) {
+          observer.unobserve(sectionRefs[index]!)
         }
       })
     }
@@ -115,7 +120,7 @@ export default function AboutPage() {
             {sections.map((section, index) => (
               <motion.div
                 key={index}
-                ref={sectionRefs[index]}
+                ref={setSectionRef(index)}
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
