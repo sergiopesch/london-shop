@@ -6,8 +6,8 @@ import { notFound } from "next/navigation"
 import { Heart, Share2 } from "lucide-react"
 import { getProduct } from "@/lib/products"
 
-export default function MugProductPage({ params }: { params: { product: string } }) {
-  const product = params.product
+export default async function MugProductPage({ params }: { params: Promise<{ product: string }> }) {
+  const { product } = await params
 
   // Get product data
   const productInfo = getProduct("mugs", product)

@@ -1,19 +1,46 @@
-import { createClient } from "@supabase/supabase-js"
+import { createClient, SupabaseClient } from "@supabase/supabase-js"
 
 // Initialize the Supabase client with error handling
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Validate environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("Missing Supabase environment variables. Please check your .env file or environment configuration.")
+// Track if Supabase is available
+const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
+
+// Create a single supabase client for the entire app (or null if not configured)
+let supabaseClient: SupabaseClient | null = null
+
+if (isSupabaseConfigured) {
+  supabaseClient = createClient(supabaseUrl!, supabaseAnonKey!, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  })
 }
 
-// Create a single supabase client for the entire app
-export const supabase = createClient(supabaseUrl || "", supabaseAnonKey || "", {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
+// Export a getter that throws a helpful error if Supabase is not configured
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(_, prop) {
+    if (!supabaseClient) {
+      console.warn("Supabase is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.")
+      // Return a mock that won't break the app during build
+      if (prop === 'from') {
+        return () => ({
+          select: () => ({ data: [], error: null, order: () => ({ data: [], error: null }) }),
+          insert: () => ({ select: () => ({ data: [], error: null }) }),
+        })
+      }
+      if (prop === 'auth') {
+        return {
+          signInWithPassword: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
+          signOut: async () => ({ error: null }),
+          getSession: async () => ({ data: { session: null }, error: null }),
+        }
+      }
+      return () => {}
+    }
+    return supabaseClient[prop as keyof SupabaseClient]
   },
 })
 

@@ -7,13 +7,30 @@ import AdminLayout from "@/components/admin/admin-layout"
 import Link from "next/link"
 import { Users, MessageSquare, ShoppingBag, TrendingUp } from "lucide-react"
 
+// Types for data
+interface Customer {
+  id: string
+  first_name?: string
+  last_name?: string
+  email?: string
+  created_at?: string
+}
+
+interface Feedback {
+  id: string
+  first_name?: string
+  last_name?: string
+  note?: string
+  created_at?: string
+}
+
 // Mock data for when API calls fail
-const fallbackCustomers = []
-const fallbackFeedback = []
+const fallbackCustomers: Customer[] = []
+const fallbackFeedback: Feedback[] = []
 
 export default function AdminDashboard() {
-  const [customers, setCustomers] = useState([])
-  const [feedback, setFeedback] = useState([])
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [feedback, setFeedback] = useState<Feedback[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -123,7 +140,7 @@ export default function AdminDashboard() {
           <div className="p-6">
             {recentCustomers.length > 0 ? (
               <ul className="divide-y divide-gray-700">
-                {recentCustomers.map((customer: any) => (
+                {recentCustomers.map((customer: Customer) => (
                   <li key={customer.id} className="py-3 flex items-center">
                     <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-700 flex items-center justify-center">
                       <span className="text-gray-300 font-medium">
@@ -159,7 +176,7 @@ export default function AdminDashboard() {
           <div className="p-6">
             {recentFeedback.length > 0 ? (
               <ul className="divide-y divide-gray-700">
-                {recentFeedback.map((item: any) => (
+                {recentFeedback.map((item: Feedback) => (
                   <li key={item.id} className="py-3">
                     <div className="flex items-start">
                       <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-700 flex items-center justify-center">

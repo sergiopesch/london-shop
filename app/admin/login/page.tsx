@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { LondonLogo } from "@/components/london-logo"
 import { setAdminAuth, checkAdminAuth } from "@/lib/client-auth"
 
@@ -98,9 +99,9 @@ export default function AdminLoginPage() {
         </div>
 
         <div className="mt-8 text-center">
-          <a href="/" className="text-gray-400 hover:text-white transition-colors text-sm">
+          <Link href="/" className="text-gray-400 hover:text-white transition-colors text-sm">
             Return to London Shop
-          </a>
+          </Link>
         </div>
       </div>
     </div>

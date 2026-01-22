@@ -24,7 +24,7 @@ export default function MugProductPage() {
   const { addItem } = useCart()
 
   // Define color images mapping - Signature mug in white and black
-  const colorImages = useMemo(
+  const colorImages: Record<string, string> = useMemo(
     () => ({
       White: "/products/white-mug.png",
       Black: "/products/black-mug.png", // Updated to use the new black mug image

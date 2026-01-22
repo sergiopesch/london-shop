@@ -32,7 +32,8 @@ export async function loginAdmin(formData: FormData) {
 
     // Set the admin session cookie
     try {
-      cookies().set(ADMIN_COOKIE, "authenticated", COOKIE_OPTIONS)
+      const cookieStore = await cookies()
+      cookieStore.set(ADMIN_COOKIE, "authenticated", COOKIE_OPTIONS)
     } catch (cookieError) {
       console.error("Error setting cookie:", cookieError)
       return {
@@ -54,7 +55,8 @@ export async function loginAdmin(formData: FormData) {
 // Clear admin session cookie (server action)
 export async function logoutAdmin() {
   try {
-    cookies().delete(ADMIN_COOKIE)
+    const cookieStore = await cookies()
+    cookieStore.delete(ADMIN_COOKIE)
   } catch (error) {
     console.error("Logout error:", error)
     // Even if there's an error, we still want to redirect to login

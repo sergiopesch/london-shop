@@ -8,8 +8,8 @@ import { getProduct } from "@/lib/products"
 import { PageTransition } from "@/components/page-transition"
 import { BackToTop } from "@/components/back-to-top"
 
-export default function HoodieProductPage({ params }: { params: { product: string } }) {
-  const product = params.product
+export default async function HoodieProductPage({ params }: { params: Promise<{ product: string }> }) {
+  const { product } = await params
 
   // Get product data
   const productInfo = getProduct("hoodies", product)

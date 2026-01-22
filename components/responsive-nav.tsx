@@ -91,8 +91,8 @@ export function ResponsiveNav() {
     [pathname],
   )
 
-  const NavLink = memo(
-    ({ href, children, isMobile = false }: { href: string; children: React.ReactNode; isMobile?: boolean }) => (
+  const NavLink = memo(function NavLink({ href, children, isMobile = false }: { href: string; children: React.ReactNode; isMobile?: boolean }) {
+    return (
       <Link
         href={href}
         className={`text-white hover:text-opacity-80 transition-colors ${
@@ -102,8 +102,8 @@ export function ResponsiveNav() {
       >
         {children}
       </Link>
-    ),
-  )
+    )
+  })
 
   return (
     <>

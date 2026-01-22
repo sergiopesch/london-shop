@@ -49,7 +49,8 @@ export async function loginAdmin(formData: FormData) {
 
     // Set the admin session cookie
     try {
-      cookies().set(ADMIN_COOKIE, "authenticated", COOKIE_OPTIONS)
+      const cookieStore = await cookies()
+      cookieStore.set(ADMIN_COOKIE, "authenticated", COOKIE_OPTIONS)
     } catch (cookieError) {
       console.error("Error setting cookie:", cookieError)
       return {
@@ -71,7 +72,8 @@ export async function loginAdmin(formData: FormData) {
 // Clear admin session cookie (server action)
 export async function logoutAdmin() {
   try {
-    cookies().delete(ADMIN_COOKIE)
+    const cookieStore = await cookies()
+    cookieStore.delete(ADMIN_COOKIE)
   } catch (error) {
     console.error("Logout error:", error)
     // Even if there's an error, we still want to redirect to login
@@ -80,9 +82,9 @@ export async function logoutAdmin() {
 }
 
 // Check if admin is authenticated (server-side) with improved error handling
-export function isAdminAuthenticated(): boolean {
+export async function isAdminAuthenticated(): Promise<boolean> {
   try {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     return cookieStore.get(ADMIN_COOKIE)?.value === "authenticated"
   } catch (error) {
     console.error("Authentication check error:", error)
@@ -91,9 +93,10 @@ export function isAdminAuthenticated(): boolean {
 }
 
 // Protect admin routes (server-side)
-export function protectAdminRoute() {
+export async function protectAdminRoute() {
   try {
-    if (!isAdminAuthenticated()) {
+    const isAuthenticated = await isAdminAuthenticated()
+    if (!isAuthenticated) {
       redirect("/admin/login")
     }
   } catch (error) {

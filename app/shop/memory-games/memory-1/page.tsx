@@ -24,7 +24,7 @@ export default function MemoryGameProductPage() {
   const { addItem } = useCart()
 
   // Define images
-  const colorImages = useMemo(
+  const colorImages: Record<string, string> = useMemo(
     () => ({
       Multicolor: "/products/memory-games-iconic.png",
     }),

@@ -15,7 +15,7 @@ export function useIntersectionObserver({
 }: UseIntersectionObserverProps = {}) {
   const [isIntersecting, setIsIntersecting] = useState(false)
   const [hasIntersected, setHasIntersected] = useState(false)
-  const ref = useRef<Element | null>(null)
+  const ref = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(

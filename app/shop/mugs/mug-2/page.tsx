@@ -24,7 +24,7 @@ export default function UndergroundMugPage() {
   const { addItem } = useCart()
 
   // Define color images mapping - Underground mug only in white
-  const colorImages = useMemo(
+  const colorImages: Record<string, string> = useMemo(
     () => ({
       White: "/products/underground-mug.png",
     }),

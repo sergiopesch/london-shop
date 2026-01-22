@@ -240,7 +240,7 @@ export default function AboutPage() {
 }
 
 // Timeline Item Component
-function TimelineItem({ date, title, description, isLeft }) {
+function TimelineItem({ date, title, description, isLeft }: { date: string; title: string; description: string; isLeft: boolean }) {
   return (
     <div className={`relative flex items-center ${isLeft ? "flex-row" : "flex-row-reverse"}`}>
       {/* Content */}
@@ -260,7 +260,7 @@ function TimelineItem({ date, title, description, isLeft }) {
 }
 
 // Value Card Component
-function ValueCard({ title, description, icon }) {
+function ValueCard({ title, description, icon }: { title: string; description: string; icon: string }) {
   return (
     <div className="backdrop-blur-sm bg-white/5 rounded-xl p-8 border border-white/10 shadow-xl">
       <div className="w-16 h-16 rounded-full bg-red-600/20 flex items-center justify-center mx-auto mb-6">
