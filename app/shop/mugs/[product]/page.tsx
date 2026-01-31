@@ -1,148 +1,206 @@
-import { ResponsiveNav } from "@/components/responsive-nav"
-import { SiteFooter } from "@/components/site-footer"
-import Image from "next/image"
-import Link from "next/link"
-import { notFound } from "next/navigation"
-import { Heart, Share2 } from "lucide-react"
+"use client"
+
+import { useState, useCallback, useMemo, Suspense } from "react"
+import { useCart } from "@/context/cart-context"
 import { getProduct } from "@/lib/products"
+import { notFound } from "next/navigation"
+import { ProductDetailLayout } from "@/components/product/product-detail-layout"
+import { ProductImage } from "@/components/product/product-image"
+import { ProductInfo } from "@/components/product/product-info"
+import { ProductBreadcrumbs } from "@/components/product/product-breadcrumbs"
+import { Loader } from "@/components/ui/loader"
+import { use } from "react"
 
-export default async function MugProductPage({ params }: { params: Promise<{ product: string }> }) {
-  const { product } = await params
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <Loader className="w-10 h-10 text-red-600" />
+  </div>
+)
 
+export default function MugProductPage({ params }: { params: Promise<{ product: string }> }) {
+  const { product } = use(params)
+  
   // Get product data
-  const productInfo = getProduct("mugs", product)
+  const productInfo = useMemo(() => getProduct("mugs", product), [product])
 
   // Check if the product exists
   if (!productInfo) {
     notFound()
   }
 
-  return (
-    <>
-      <ResponsiveNav />
-      <div className="relative min-h-screen">
-        {/* Full-page background image */}
-        <div className="fixed inset-0 z-0">
-          <Image
-            src="/mugs-background.png"
-            alt="Hyde Park Serpentine lake with swans at sunset"
-            fill
-            priority
-            className="object-cover brightness-[0.5]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70"></div>
-        </div>
+  // Determine available colors based on product
+  const isUnderground = product === "mug-2" || productInfo.name.toLowerCase().includes("underground")
+  const availableColors = useMemo(() => productInfo.colors || ["White"], [productInfo.colors])
+  
+  const [selectedColor, setSelectedColor] = useState(availableColors[0])
+  const [selectedSize, setSelectedSize] = useState("Standard")
+  const [isAdding, setIsAdding] = useState(false)
+  const { addItem } = useCart()
 
-        {/* Content overlay */}
-        <div className="relative z-10 pt-28 px-4 md:px-8 pb-12">
-          <div className="max-w-6xl mx-auto">
-            {/* Breadcrumbs */}
-            <nav className="flex items-center text-sm text-white/70 my-4">
-              <Link href="/" className="hover:text-white transition-colors">
-                Home
-              </Link>
-              <span className="mx-2">/</span>
-              <Link href="/shop" className="hover:text-white transition-colors">
-                Shop
-              </Link>
-              <span className="mx-2">/</span>
-              <Link href="/shop/mugs" className="hover:text-white transition-colors">
-                Mugs
-              </Link>
-            </nav>
+  // Define color images mapping based on product type
+  const colorImages = useMemo((): Record<string, string> => {
+    if (isUnderground) {
+      return {
+        White: "/products/underground-mug.png",
+      } as Record<string, string>
+    }
+    return {
+      White: "/products/white-mug.png",
+      Black: "/products/black-mug.png",
+    } as Record<string, string>
+  }, [isUnderground])
 
-            {/* Product Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-              {/* Product Image */}
-              <div className="relative aspect-square rounded-lg overflow-hidden backdrop-blur-sm bg-white/5 p-4 shadow-lg">
-                <Image
-                  src={productInfo.imageSrc || "/placeholder.svg"}
-                  alt={productInfo.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
+  // Use useCallback for event handlers to prevent unnecessary re-renders
+  const handleColorChange = useCallback((color: string) => {
+    setSelectedColor(color)
+  }, [])
 
-              {/* Product Info */}
-              <div className="backdrop-blur-sm bg-black/30 rounded-xl p-8 shadow-xl border border-white/10">
-                <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">{productInfo.name}</h1>
-                <p className="text-2xl font-bold text-red-500 mb-4">£{productInfo.price.toFixed(2)}</p>
-                <p className="text-gray-200 mb-6">{productInfo.description}</p>
+  const handleSizeChange = useCallback((size: string) => {
+    setSelectedSize(size)
+  }, [])
 
-                {/* Size Selection */}
-                {productInfo.sizes && productInfo.sizes.length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="text-white font-medium mb-2">Size</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {productInfo.sizes.map((size) => (
-                        <button
-                          key={size}
-                          className="border border-gray-700 rounded-md px-4 py-2 text-gray-300 hover:border-red-600 hover:text-white transition-colors"
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+  const handleAddToCart = useCallback(() => {
+    if (isAdding) return
 
-                {/* Features */}
-                <div className="mb-6">
-                  <h3 className="text-white font-medium mb-2">Features</h3>
-                  <ul className="list-disc list-inside text-gray-300 space-y-1">
-                    <li>High-quality ceramic</li>
-                    <li>Dishwasher safe</li>
-                    <li>Microwave safe</li>
-                    <li>11oz capacity (Standard) / 15oz capacity (Large)</li>
-                    <li>Comfortable handle</li>
-                    <li>Durable print that won't fade</li>
-                  </ul>
-                </div>
+    setIsAdding(true)
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-md transition-colors flex-1">
-                    Add to Cart
-                  </button>
-                  <button className="border border-gray-700 hover:border-red-600 text-white font-medium py-3 px-4 rounded-md transition-colors flex items-center justify-center">
-                    <Heart className="w-5 h-5 mr-2" />
-                    Wishlist
-                  </button>
-                  <button className="border border-gray-700 hover:border-red-600 text-white font-medium py-3 px-4 rounded-md transition-colors flex items-center justify-center">
-                    <Share2 className="w-5 h-5 mr-2" />
-                    Share
-                  </button>
-                </div>
-              </div>
-            </div>
+    // Add item to cart
+    addItem({
+      id: productInfo.id,
+      name: productInfo.name,
+      price: productInfo.price,
+      imageSrc: colorImages[selectedColor] || productInfo.imageSrc,
+      color: selectedColor,
+      size: selectedSize,
+      slug: productInfo.slug,
+      categorySlug: productInfo.categorySlug,
+    })
 
-            {/* Product Information */}
-            <div className="backdrop-blur-sm bg-black/30 rounded-xl p-8 shadow-xl border border-white/10 mb-12">
-              <h2 className="text-2xl font-bold text-white mb-4">Product Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-xl font-medium text-white mb-2">Dimensions</h3>
-                  <p className="text-gray-200">
-                    Standard: Height 9.5cm, Diameter 8cm
-                    <br />
-                    Large: Height 11cm, Diameter 8.5cm
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-xl font-medium text-white mb-2">Care Instructions</h3>
-                  <p className="text-gray-200">
-                    Dishwasher safe, but hand washing is recommended for longevity of the print.
-                    <br />
-                    Microwave safe, but avoid prolonged heating to preserve the design.
-                  </p>
-                </div>
-              </div>
-            </div>
+    // Reset adding state after animation
+    setTimeout(() => {
+      setIsAdding(false)
+    }, 1000)
+  }, [addItem, colorImages, isAdding, productInfo, selectedColor, selectedSize])
+
+  // Memoize breadcrumbs to prevent re-renders
+  const breadcrumbs = useMemo(
+    () => (
+      <ProductBreadcrumbs
+        paths={[
+          { name: "Home", href: "/" },
+          { name: "Shop", href: "/shop" },
+          { name: "Mugs", href: "/shop/mugs" },
+          { name: productInfo.name, href: `/shop/mugs/${productInfo.slug}`, isCurrent: true },
+        ]}
+      />
+    ),
+    [productInfo.name, productInfo.slug],
+  )
+
+  // Memoize product image to prevent re-renders
+  const productImage = useMemo(
+    () => (
+      <ProductImage
+        colorImages={colorImages}
+        selectedColor={selectedColor}
+        alt={productInfo.name}
+        isAdding={isAdding}
+      />
+    ),
+    [colorImages, selectedColor, productInfo.name, isAdding],
+  )
+
+  // Memoize product features
+  const features = useMemo(
+    () => [
+      "High-quality ceramic",
+      "Dishwasher safe",
+      "Microwave safe",
+      "11oz capacity (Standard) / 15oz capacity (Large)",
+      "Comfortable handle",
+      "Durable print that won't fade",
+    ],
+    [],
+  )
+
+  // Memoize product info to prevent re-renders
+  const productInfoComponent = useMemo(
+    () => (
+      <ProductInfo
+        name={productInfo.name}
+        price={productInfo.price}
+        description={productInfo.description}
+        colors={availableColors}
+        selectedColor={selectedColor}
+        onColorChange={handleColorChange}
+        sizes={productInfo.sizes || ["Standard", "Large"]}
+        selectedSize={selectedSize}
+        onSizeChange={handleSizeChange}
+        features={features}
+        isAdding={isAdding}
+        onAddToCart={handleAddToCart}
+        productType="mug"
+        logoType={isUnderground ? "underground" : "signature"}
+      />
+    ),
+    [
+      productInfo.name,
+      productInfo.price,
+      productInfo.description,
+      productInfo.sizes,
+      availableColors,
+      selectedColor,
+      selectedSize,
+      handleColorChange,
+      handleSizeChange,
+      features,
+      isAdding,
+      handleAddToCart,
+      isUnderground,
+    ],
+  )
+
+  // Memoize product information
+  const productInformation = useMemo(
+    () => (
+      <div
+        className="backdrop-blur-sm bg-black/30 rounded-xl p-8 shadow-xl border border-white/10 mb-12 animate-fade-in"
+        style={{ animationDelay: "0.4s" }}
+      >
+        <h2 className="text-2xl font-bold text-white mb-4">Product Information</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h3 className="text-xl font-medium text-white mb-2">Dimensions</h3>
+            <p className="text-gray-200">
+              Standard: Height 9.5cm, Diameter 8cm
+              <br />
+              Large: Height 11cm, Diameter 8.5cm
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xl font-medium text-white mb-2">Care Instructions</h3>
+            <p className="text-gray-200">
+              Dishwasher safe, but hand washing is recommended for longevity of the print.
+              <br />
+              Microwave safe, but avoid prolonged heating to preserve the design.
+            </p>
           </div>
         </div>
       </div>
-      <SiteFooter />
-    </>
+    ),
+    [],
+  )
+
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ProductDetailLayout
+        backgroundImage="/mugs-background.png"
+        breadcrumbs={breadcrumbs}
+        productImage={productImage}
+        productInfo={productInfoComponent}
+        additionalInfo={productInformation}
+      />
+    </Suspense>
   )
 }
-

@@ -1,120 +1,178 @@
-import { ResponsiveNav } from "@/components/responsive-nav"
-import { SiteFooter } from "@/components/site-footer"
-import Image from "next/image"
-import Link from "next/link"
-import { notFound } from "next/navigation"
-import { Heart, Share2 } from "lucide-react"
+"use client"
+
+import { useState, useCallback, useMemo, Suspense } from "react"
+import { useCart } from "@/context/cart-context"
 import { getProduct } from "@/lib/products"
+import { notFound } from "next/navigation"
+import { ProductDetailLayout } from "@/components/product/product-detail-layout"
+import { ProductImage } from "@/components/product/product-image"
+import { ProductInfo } from "@/components/product/product-info"
+import { ProductBreadcrumbs } from "@/components/product/product-breadcrumbs"
+import { Loader } from "@/components/ui/loader"
+import { use } from "react"
 
-export default async function MemoryGameProductPage({ params }: { params: Promise<{ product: string }> }) {
-  const { product } = await params
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <Loader className="w-10 h-10 text-red-600" />
+  </div>
+)
 
+export default function MemoryGameProductPage({ params }: { params: Promise<{ product: string }> }) {
+  const { product } = use(params)
+  
   // Get product data
-  const productInfo = getProduct("memory-games", product)
+  const productInfo = useMemo(() => getProduct("memory-games", product), [product])
 
   // Check if the product exists
   if (!productInfo) {
     notFound()
   }
 
-  return (
-    <>
-      <ResponsiveNav />
-      <div className="relative min-h-screen">
-        {/* Full-page background image */}
-        <div className="fixed inset-0 z-0">
-          <Image
-            src="/memory-games-background.png"
-            alt="Green Park with view of Buckingham Palace"
-            fill
-            priority
-            className="object-cover brightness-[0.5]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70"></div>
-        </div>
+  // Memory games have fixed options
+  const isUnderground = product === "memory-2" || productInfo.name.toLowerCase().includes("underground")
+  
+  const [selectedColor] = useState("Multicolor")
+  const [selectedSize] = useState("One Size")
+  const [isAdding, setIsAdding] = useState(false)
+  const { addItem } = useCart()
 
-        {/* Content overlay */}
-        <div className="relative z-10 pt-28 px-4 md:px-8 pb-12">
-          <div className="max-w-6xl mx-auto">
-            {/* Breadcrumbs */}
-            <nav className="flex items-center text-sm text-white/70 my-4">
-              <Link href="/" className="hover:text-white transition-colors">
-                Home
-              </Link>
-              <span className="mx-2">/</span>
-              <Link href="/shop" className="hover:text-white transition-colors">
-                Shop
-              </Link>
-              <span className="mx-2">/</span>
-              <Link href="/shop/memory-games" className="hover:text-white transition-colors">
-                Memory Games
-              </Link>
-            </nav>
+  // Define color images mapping based on product type
+  const colorImages = useMemo((): Record<string, string> => {
+    if (isUnderground) {
+      return {
+        Multicolor: "/products/memory-underground.png",
+      } as Record<string, string>
+    }
+    return {
+      Multicolor: "/products/memory-games-iconic.png",
+    } as Record<string, string>
+  }, [isUnderground])
 
-            {/* Product Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-              {/* Product Image */}
-              <div className="relative aspect-square rounded-lg overflow-hidden backdrop-blur-sm bg-white/5 p-4 shadow-lg">
-                <Image
-                  src={productInfo.imageSrc || "/placeholder.svg"}
-                  alt={productInfo.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
+  const handleAddToCart = useCallback(() => {
+    if (isAdding) return
 
-              {/* Product Info */}
-              <div className="backdrop-blur-sm bg-black/30 rounded-xl p-8 shadow-xl border border-white/10">
-                <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">{productInfo.name}</h1>
-                <p className="text-2xl font-bold text-red-500 mb-4">£{productInfo.price.toFixed(2)}</p>
-                <p className="text-gray-200 mb-6">{productInfo.description}</p>
+    setIsAdding(true)
 
-                {/* Features */}
-                <div className="mb-6">
-                  <h3 className="text-white font-medium mb-2">Features</h3>
-                  <ul className="list-disc list-inside text-gray-300 space-y-1">
-                    <li>30 pairs of beautifully designed cards</li>
-                    <li>Iconic London Underground design</li>
-                    <li>Durable card stock with smooth finish</li>
-                    <li>Comes in a sturdy storage box</li>
-                    <li>Perfect for ages 6 and up</li>
-                    <li>2-4 players</li>
-                  </ul>
-                </div>
+    // Add item to cart
+    addItem({
+      id: productInfo.id,
+      name: productInfo.name,
+      price: productInfo.price,
+      imageSrc: colorImages[selectedColor] || productInfo.imageSrc,
+      color: selectedColor,
+      size: selectedSize,
+      slug: productInfo.slug,
+      categorySlug: productInfo.categorySlug,
+    })
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-md transition-colors flex-1">
-                    Add to Cart
-                  </button>
-                  <button className="border border-gray-700 hover:border-red-600 text-white font-medium py-3 px-4 rounded-md transition-colors flex items-center justify-center">
-                    <Heart className="w-5 h-5 mr-2" />
-                    Wishlist
-                  </button>
-                  <button className="border border-gray-700 hover:border-red-600 text-white font-medium py-3 px-4 rounded-md transition-colors flex items-center justify-center">
-                    <Share2 className="w-5 h-5 mr-2" />
-                    Share
-                  </button>
-                </div>
-              </div>
-            </div>
+    // Reset adding state after animation
+    setTimeout(() => {
+      setIsAdding(false)
+    }, 1000)
+  }, [addItem, colorImages, isAdding, productInfo, selectedColor, selectedSize])
 
-            {/* How to Play */}
-            <div className="backdrop-blur-sm bg-black/30 rounded-xl p-8 shadow-xl border border-white/10 mb-12">
-              <h2 className="text-2xl font-bold text-white mb-4">How to Play</h2>
-              <div className="text-gray-200 space-y-4">
-                <p>1. Shuffle all cards and place them face down in a grid pattern.</p>
-                <p>2. Players take turns flipping over two cards at a time, trying to find matching pairs.</p>
-                <p>3. If the cards match, the player keeps them and takes another turn.</p>
-                <p>4. If they don't match, the cards are turned face down again and it's the next player's turn.</p>
-                <p>5. The game ends when all pairs have been found. The player with the most pairs wins!</p>
-              </div>
-            </div>
-          </div>
+  // Memoize breadcrumbs to prevent re-renders
+  const breadcrumbs = useMemo(
+    () => (
+      <ProductBreadcrumbs
+        paths={[
+          { name: "Home", href: "/" },
+          { name: "Shop", href: "/shop" },
+          { name: "Memory Games", href: "/shop/memory-games" },
+          { name: productInfo.name, href: `/shop/memory-games/${productInfo.slug}`, isCurrent: true },
+        ]}
+      />
+    ),
+    [productInfo.name, productInfo.slug],
+  )
+
+  // Memoize product image to prevent re-renders
+  const productImage = useMemo(
+    () => (
+      <ProductImage
+        colorImages={colorImages}
+        selectedColor={selectedColor}
+        alt={productInfo.name}
+        isAdding={isAdding}
+      />
+    ),
+    [colorImages, selectedColor, productInfo.name, isAdding],
+  )
+
+  // Memoize product features
+  const features = useMemo(
+    () => [
+      isUnderground ? "24 pairs of London Underground themed cards" : "30 pairs of beautifully designed cards",
+      isUnderground ? "Iconic London Underground stations and symbols" : "Iconic London landmarks and symbols",
+      "Durable card stock with smooth finish",
+      "Comes in a sturdy storage box",
+      "Perfect for ages 6 and up",
+      "2-4 players",
+    ],
+    [isUnderground],
+  )
+
+  // Memoize product info to prevent re-renders
+  const productInfoComponent = useMemo(
+    () => (
+      <ProductInfo
+        name={productInfo.name}
+        price={productInfo.price}
+        description={productInfo.description}
+        colors={["Multicolor"]}
+        selectedColor={selectedColor}
+        onColorChange={() => {}}
+        sizes={["One Size"]}
+        selectedSize={selectedSize}
+        onSizeChange={() => {}}
+        features={features}
+        isAdding={isAdding}
+        onAddToCart={handleAddToCart}
+        productType="memory-game"
+      />
+    ),
+    [
+      productInfo.name,
+      productInfo.price,
+      productInfo.description,
+      selectedColor,
+      selectedSize,
+      features,
+      isAdding,
+      handleAddToCart,
+    ],
+  )
+
+  // Memoize how to play section
+  const howToPlay = useMemo(
+    () => (
+      <div
+        className="backdrop-blur-sm bg-black/30 rounded-xl p-8 shadow-xl border border-white/10 mb-12 animate-fade-in"
+        style={{ animationDelay: "0.4s" }}
+      >
+        <h2 className="text-2xl font-bold text-white mb-4">How to Play</h2>
+        <div className="text-gray-200 space-y-4">
+          <p>1. Shuffle all cards and place them face down in a grid pattern.</p>
+          <p>2. Players take turns flipping over two cards at a time, trying to find matching pairs.</p>
+          <p>3. If the cards match, the player keeps them and takes another turn.</p>
+          <p>4. If they don't match, the cards are turned face down again and it's the next player's turn.</p>
+          <p>5. The game ends when all pairs have been found. The player with the most pairs wins!</p>
         </div>
       </div>
-      <SiteFooter />
-    </>
+    ),
+    [],
+  )
+
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ProductDetailLayout
+        backgroundImage="/memory-games-background.png"
+        breadcrumbs={breadcrumbs}
+        productImage={productImage}
+        productInfo={productInfoComponent}
+        additionalInfo={howToPlay}
+      />
+    </Suspense>
   )
 }
-

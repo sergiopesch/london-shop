@@ -1,5 +1,47 @@
 import { NextResponse } from "next/server"
-import { getAllFeedback } from "@/lib/supabase"
+import { getAllFeedback, saveFeedback, saveCustomer } from "@/lib/supabase"
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    const { email, firstName, lastName, note, cartItems } = body
+
+    // Validate required fields
+    if (!email || !firstName || !lastName) {
+      return NextResponse.json(
+        { success: false, error: "Missing required fields" },
+        { status: 400 }
+      )
+    }
+
+    // Save customer (or get existing)
+    await saveCustomer({
+      email,
+      first_name: firstName,
+      last_name: lastName,
+    })
+
+    // Save feedback
+    const feedback = await saveFeedback({
+      email,
+      first_name: firstName,
+      last_name: lastName,
+      note: note || "",
+      cart_items: cartItems || [],
+    })
+
+    return NextResponse.json({
+      success: true,
+      data: feedback,
+    })
+  } catch (error) {
+    console.error("Error saving feedback:", error)
+    return NextResponse.json(
+      { success: false, error: "Failed to save feedback" },
+      { status: 500 }
+    )
+  }
+}
 
 export async function GET() {
   try {

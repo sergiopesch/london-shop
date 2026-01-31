@@ -1,163 +1,196 @@
-import { ResponsiveNav } from "@/components/responsive-nav"
-import { SiteFooter } from "@/components/site-footer"
-import { LoadingImage } from "@/components/loading-image"
-import Link from "next/link"
-import { notFound } from "next/navigation"
-import { Heart, Share2 } from "lucide-react"
+"use client"
+
+import { useState, useCallback, useMemo, Suspense } from "react"
+import { useCart } from "@/context/cart-context"
 import { getProduct } from "@/lib/products"
-import { PageTransition } from "@/components/page-transition"
-import { BackToTop } from "@/components/back-to-top"
+import { notFound } from "next/navigation"
+import { ProductDetailLayout } from "@/components/product/product-detail-layout"
+import { ProductImage } from "@/components/product/product-image"
+import { ProductInfo } from "@/components/product/product-info"
+import { ProductBreadcrumbs } from "@/components/product/product-breadcrumbs"
+import { Loader } from "@/components/ui/loader"
+import { use } from "react"
 
-export default async function HoodieProductPage({ params }: { params: Promise<{ product: string }> }) {
-  const { product } = await params
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <Loader className="w-10 h-10 text-red-600" />
+  </div>
+)
 
+export default function HoodieProductPage({ params }: { params: Promise<{ product: string }> }) {
+  const { product } = use(params)
+  
   // Get product data
-  const productInfo = getProduct("hoodies", product)
+  const productInfo = useMemo(() => getProduct("hoodies", product), [product])
 
   // Check if the product exists
   if (!productInfo) {
     notFound()
   }
 
-  return (
-    <PageTransition>
-      <ResponsiveNav />
-      <div className="relative min-h-screen">
-        {/* Full-page background image */}
-        <div className="fixed inset-0 z-0">
-          <LoadingImage
-            src="/hoodies-background.jpg"
-            alt="Westminster Abbey in London"
-            fill
-            priority
-            className="object-cover brightness-[0.5]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70"></div>
-        </div>
+  // Determine available colors based on product
+  const isUnderground = product === "hoodie-2" || productInfo.name.toLowerCase().includes("underground")
+  const availableColors = useMemo(() => productInfo.colors || ["White"], [productInfo.colors])
+  
+  const [selectedColor, setSelectedColor] = useState(availableColors[0])
+  const [selectedSize, setSelectedSize] = useState("M")
+  const [isAdding, setIsAdding] = useState(false)
+  const { addItem } = useCart()
 
-        {/* Content overlay */}
-        <div className="relative z-10 pt-28 px-4 md:px-8 pb-12">
-          <div className="max-w-6xl mx-auto">
-            {/* Breadcrumbs */}
-            <nav className="flex items-center text-sm text-white/70 my-4 animate-fade-in">
-              <Link href="/" className="hover:text-white transition-colors">
-                Home
-              </Link>
-              <span className="mx-2">/</span>
-              <Link href="/shop" className="hover:text-white transition-colors">
-                Shop
-              </Link>
-              <span className="mx-2">/</span>
-              <Link href="/shop/hoodies" className="hover:text-white transition-colors">
-                Hoodies
-              </Link>
-            </nav>
+  // Define color images mapping based on product type
+  const colorImages = useMemo((): Record<string, string> => {
+    if (isUnderground) {
+      return {
+        White: "/products/underground-hoodie.png",
+      } as Record<string, string>
+    }
+    return {
+      White: "/products/white-hoodie.png",
+      Black: "/products/black-hoodie.png",
+    } as Record<string, string>
+  }, [isUnderground])
 
-            {/* Product Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-              {/* Product Image */}
-              <div className="relative aspect-square rounded-lg overflow-hidden backdrop-blur-sm bg-white/5 p-4 shadow-lg animate-fade-in">
-                <LoadingImage
-                  src={productInfo.imageSrc || "/placeholder.svg"}
-                  alt={productInfo.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
+  // Use useCallback for event handlers to prevent unnecessary re-renders
+  const handleColorChange = useCallback((color: string) => {
+    setSelectedColor(color)
+  }, [])
 
-              {/* Product Info */}
-              <div
-                className="backdrop-blur-sm bg-black/30 rounded-xl p-8 shadow-xl border border-white/10 animate-fade-in"
-                style={{ animationDelay: "0.2s" }}
-              >
-                <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">{productInfo.name}</h1>
-                <p className="text-2xl font-bold text-red-500 mb-4">£{productInfo.price.toFixed(2)}</p>
-                <p className="text-gray-200 mb-6">{productInfo.description}</p>
+  const handleSizeChange = useCallback((size: string) => {
+    setSelectedSize(size)
+  }, [])
 
-                {/* Color Selection */}
-                {productInfo.colors && productInfo.colors.length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="text-white font-medium mb-2">Color</h3>
-                    <div className="flex space-x-2">
-                      {productInfo.colors.map((color) => (
-                        <button
-                          key={color}
-                          className={`border border-gray-700 rounded-md px-4 py-2 text-gray-300 hover:border-red-600 hover:text-white transition-colors ${color === "Beige" ? "bg-[#d2ccc4] text-gray-800" : ""}`}
-                        >
-                          {color}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+  const handleAddToCart = useCallback(() => {
+    if (isAdding) return
 
-                {/* Size Selection */}
-                {productInfo.sizes && productInfo.sizes.length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="text-white font-medium mb-2">Size</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {productInfo.sizes.map((size) => (
-                        <button
-                          key={size}
-                          className="border border-gray-700 rounded-md px-4 py-2 text-gray-300 hover:border-red-600 hover:text-white transition-colors"
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+    setIsAdding(true)
 
-                {/* Features */}
-                <div className="mb-6">
-                  <h3 className="text-white font-medium mb-2">Features</h3>
-                  <ul className="list-disc list-inside text-gray-300 space-y-1">
-                    <li>80% cotton, 20% polyester blend</li>
-                    <li>Screen printed London Shop logo</li>
-                    <li>Kangaroo pocket</li>
-                    <li>Ribbed cuffs and hem</li>
-                    <li>Drawstring hood</li>
-                    <li>Machine washable</li>
-                  </ul>
-                </div>
+    // Add item to cart
+    addItem({
+      id: productInfo.id,
+      name: productInfo.name,
+      price: productInfo.price,
+      imageSrc: colorImages[selectedColor] || productInfo.imageSrc,
+      color: selectedColor,
+      size: selectedSize,
+      slug: productInfo.slug,
+      categorySlug: productInfo.categorySlug,
+    })
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-md transition-colors flex-1">
-                    Add to Cart
-                  </button>
-                  <button className="border border-gray-700 hover:border-red-600 text-white font-medium py-3 px-4 rounded-md transition-colors flex items-center justify-center">
-                    <Heart className="w-5 h-5 mr-2" />
-                    Wishlist
-                  </button>
-                  <button className="border border-gray-700 hover:border-red-600 text-white font-medium py-3 px-4 rounded-md transition-colors flex items-center justify-center">
-                    <Share2 className="w-5 h-5 mr-2" />
-                    Share
-                  </button>
-                </div>
-              </div>
-            </div>
+    // Reset adding state after animation
+    setTimeout(() => {
+      setIsAdding(false)
+    }, 1000)
+  }, [addItem, colorImages, isAdding, productInfo, selectedColor, selectedSize])
 
-            {/* Care Instructions */}
-            <div
-              className="backdrop-blur-sm bg-black/30 rounded-xl p-8 shadow-xl border border-white/10 mb-12 animate-fade-in"
-              style={{ animationDelay: "0.4s" }}
-            >
-              <h2 className="text-2xl font-bold text-white mb-4">Care Instructions</h2>
-              <div className="text-gray-200 space-y-4">
-                <p>• Machine wash cold with similar colors</p>
-                <p>• Do not bleach</p>
-                <p>• Tumble dry low</p>
-                <p>• Iron on low heat if needed</p>
-                <p>• Do not dry clean</p>
-              </div>
-            </div>
-          </div>
-        </div>
+  // Memoize breadcrumbs to prevent re-renders
+  const breadcrumbs = useMemo(
+    () => (
+      <ProductBreadcrumbs
+        paths={[
+          { name: "Home", href: "/" },
+          { name: "Shop", href: "/shop" },
+          { name: "Hoodies", href: "/shop/hoodies" },
+          { name: productInfo.name, href: `/shop/hoodies/${productInfo.slug}`, isCurrent: true },
+        ]}
+      />
+    ),
+    [productInfo.name, productInfo.slug],
+  )
+
+  // Memoize product image to prevent re-renders
+  const productImage = useMemo(
+    () => (
+      <ProductImage
+        colorImages={colorImages}
+        selectedColor={selectedColor}
+        alt={productInfo.name}
+        isAdding={isAdding}
+      />
+    ),
+    [colorImages, selectedColor, productInfo.name, isAdding],
+  )
+
+  // Memoize product features
+  const features = useMemo(
+    () => [
+      "80% cotton, 20% polyester blend",
+      isUnderground ? "London Underground inspired roundel design" : "Screen printed London Shop logo",
+      "Kangaroo pocket",
+      "Ribbed cuffs and hem",
+      "Drawstring hood",
+      "Machine washable",
+    ],
+    [isUnderground],
+  )
+
+  // Memoize product info to prevent re-renders
+  const productInfoComponent = useMemo(
+    () => (
+      <ProductInfo
+        name={productInfo.name}
+        price={productInfo.price}
+        description={productInfo.description}
+        colors={availableColors}
+        selectedColor={selectedColor}
+        onColorChange={handleColorChange}
+        sizes={productInfo.sizes || ["S", "M", "L", "XL"]}
+        selectedSize={selectedSize}
+        onSizeChange={handleSizeChange}
+        features={features}
+        isAdding={isAdding}
+        onAddToCart={handleAddToCart}
+        productType="hoodie"
+        logoType={isUnderground ? "underground" : "signature"}
+      />
+    ),
+    [
+      productInfo.name,
+      productInfo.price,
+      productInfo.description,
+      productInfo.sizes,
+      availableColors,
+      selectedColor,
+      selectedSize,
+      handleColorChange,
+      handleSizeChange,
+      features,
+      isAdding,
+      handleAddToCart,
+      isUnderground,
+    ],
+  )
+
+  // Memoize care instructions
+  const careInstructions = useMemo(
+    () => (
+      <div
+        className="backdrop-blur-sm bg-black/30 rounded-xl p-8 shadow-xl border border-white/10 mb-12 animate-fade-in"
+        style={{ animationDelay: "0.4s" }}
+      >
+        <h2 className="text-2xl font-bold text-white mb-4">About</h2>
+        <p className="text-gray-200 mb-4">
+          {isUnderground
+            ? "Our Underground hoodie features the iconic roundel design inspired by the London Underground, a symbol recognized worldwide."
+            : "Our signature hoodie combines style and comfort with a minimalist design that showcases the distinctive London Shop logo."}
+        </p>
+        <p className="text-gray-200">
+          Made from premium materials and designed to last, this hoodie is perfect for London's unpredictable weather.
+        </p>
       </div>
-      <BackToTop />
-      <SiteFooter />
-    </PageTransition>
+    ),
+    [isUnderground],
+  )
+
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ProductDetailLayout
+        backgroundImage="/hoodies-background.jpg"
+        breadcrumbs={breadcrumbs}
+        productImage={productImage}
+        productInfo={productInfoComponent}
+        additionalInfo={careInstructions}
+      />
+    </Suspense>
   )
 }
-
