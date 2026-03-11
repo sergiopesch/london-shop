@@ -47,7 +47,9 @@ export default function AdminLoginForm() {
             placeholder="Enter admin password"
             required
           />
-          <p className="mt-1 text-xs text-gray-500">Default: london-shop-admin</p>
+          <p className="mt-1 text-xs text-gray-500">
+            Set ADMIN_PASSWORD in .env.local. The built-in default is for local development only.
+          </p>
         </div>
 
         <button
@@ -61,4 +63,3 @@ export default function AdminLoginForm() {
     </>
   )
 }
-

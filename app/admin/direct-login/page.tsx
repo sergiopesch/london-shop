@@ -8,44 +8,22 @@ export default function DirectLoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-    async function login() {
-      try {
-        setStatus("Attempting login...")
-
-        const response = await fetch("/api/admin/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ password: "london-shop-admin" }),
-          credentials: "include",
-        })
-
-        const data = await response.json()
-
-        if (response.ok && data.success) {
-          setStatus("Login successful! Redirecting...")
-          setTimeout(() => {
-            router.push("/admin")
-          }, 1000)
-        } else {
-          setStatus(`Login failed: ${data.message || "Unknown error"}`)
-        }
-      } catch (error) {
-        setStatus(`Error: ${error instanceof Error ? error.message : String(error)}`)
-      }
-    }
-
-    login()
-  }, [router])
+    setStatus("Direct login is disabled. Use /admin/login with ADMIN_PASSWORD from .env.local.")
+  }, [])
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
       <div className="bg-gray-800 p-8 rounded-lg max-w-md w-full text-center">
-        <h1 className="text-2xl font-bold mb-4">Direct Login</h1>
-        <div className="animate-pulse text-xl">{status}</div>
+        <h1 className="text-2xl font-bold mb-4">Direct Login Disabled</h1>
+        <div className="text-lg">{status}</div>
+        <button
+          type="button"
+          onClick={() => router.push("/admin/login")}
+          className="mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+        >
+          Go to Admin Login
+        </button>
       </div>
     </div>
   )
 }
-

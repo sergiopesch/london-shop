@@ -107,12 +107,15 @@ Create a `.env.local` file based on `.env.example`:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 
-# Admin Credentials (change these in production!)
+# Admin credentials
+# Set strong values in production. If omitted, the app falls back to development defaults.
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=your-secure-password
+ADMIN_PASSWORD=change-me-before-production
 ```
 
 **Note**: The app functions without Supabase - it will return empty arrays for database queries.
+
+**Security note**: Set `ADMIN_PASSWORD` in `.env.local` for any real deployment. The code retains a development fallback only to avoid breaking local behaviour, and it should not be relied on in production.
 
 ## Admin Dashboard
 

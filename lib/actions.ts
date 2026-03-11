@@ -2,26 +2,13 @@
 
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { verifyAdminPassword } from "./auth"
+import { verifyAdminPassword } from "./admin-credentials"
+import { ADMIN_COOKIE, COOKIE_OPTIONS } from "./admin-config"
 
-// Cookie name for admin session
-const ADMIN_COOKIE = "london-shop-admin-session"
-
-// Cookie options
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  maxAge: 60 * 60 * 24, // 24 hours
-  path: "/",
-  sameSite: "strict" as const,
-}
-
-// Set admin session cookie (server action)
 export async function loginAdmin(formData: FormData) {
   try {
     const password = formData.get("password")
 
-    // Check if password exists and is a string
     if (!password || typeof password !== "string") {
       return { success: false, message: "Password is required" }
     }
@@ -30,7 +17,6 @@ export async function loginAdmin(formData: FormData) {
       return { success: false, message: "Invalid password" }
     }
 
-    // Set the admin session cookie
     try {
       const cookieStore = await cookies()
       cookieStore.set(ADMIN_COOKIE, "authenticated", COOKIE_OPTIONS)
@@ -52,23 +38,18 @@ export async function loginAdmin(formData: FormData) {
   }
 }
 
-// Clear admin session cookie (server action)
 export async function logoutAdmin() {
   try {
     const cookieStore = await cookies()
     cookieStore.delete(ADMIN_COOKIE)
   } catch (error) {
     console.error("Logout error:", error)
-    // Even if there's an error, we still want to redirect to login
   }
 
-  // Use a try/catch block to handle any redirect errors
   try {
     redirect("/admin/login")
   } catch (error) {
     console.error("Redirect error:", error)
-    // If redirect fails, throw a more specific error
     throw new Error("Failed to redirect after logout. Please navigate to /admin/login manually.")
   }
 }
-

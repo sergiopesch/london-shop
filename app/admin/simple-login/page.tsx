@@ -4,22 +4,27 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { validateAdminPassword, setAdminCookie } from "@/lib/admin-cookie"
+import { validateAdminPassword } from "@/lib/admin-cookie"
 
 export default function SimpleAdminLogin() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setIsLoading(true)
 
-    if (validateAdminPassword(password)) {
-      setAdminCookie()
-      router.push("/admin")
-    } else {
-      setError("Invalid password")
+    try {
+      if (await validateAdminPassword(password)) {
+        router.push("/admin")
+      } else {
+        setError("Invalid password")
+      }
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -43,15 +48,18 @@ export default function SimpleAdminLogin() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
               required
             />
-            <p className="mt-1 text-xs text-gray-500">Default: london-shop-admin</p>
+            <p className="mt-1 text-xs text-gray-500">Use ADMIN_PASSWORD from .env.local.</p>
           </div>
 
-          <button type="submit" className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">
-            Sign In
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+          >
+            {isLoading ? "Signing in..." : "Sign In"}
           </button>
         </form>
       </div>
     </div>
   )
 }
-
