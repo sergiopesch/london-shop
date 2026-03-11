@@ -1,8 +1,13 @@
+"use client"
+
 import { ResponsiveNav } from "@/components/responsive-nav"
 import { SiteFooter } from "@/components/site-footer"
 import Image from "next/image"
+import { useState } from "react"
 
 export default function WaitlistPage() {
+  const [status, setStatus] = useState<"idle" | "success">("idle")
+
   return (
     <>
       <ResponsiveNav />
@@ -21,7 +26,13 @@ export default function WaitlistPage() {
                 Be the first to know when our exclusive London-themed merchandise becomes available.
               </p>
 
-              <form className="max-w-md mx-auto">
+              <form
+                className="max-w-md mx-auto"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  setStatus("success")
+                }}
+              >
                 <div className="space-y-4 mb-6">
                   <div>
                     <label htmlFor="name" className="block text-white mb-2">
@@ -30,6 +41,7 @@ export default function WaitlistPage() {
                     <input
                       type="text"
                       id="name"
+                      required
                       className="w-full bg-gray-700 border border-gray-600 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                       placeholder="Your name"
                     />
@@ -42,6 +54,7 @@ export default function WaitlistPage() {
                     <input
                       type="email"
                       id="email"
+                      required
                       className="w-full bg-gray-700 border border-gray-600 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                       placeholder="your.email@example.com"
                     />
@@ -54,6 +67,12 @@ export default function WaitlistPage() {
                 >
                   Join Waitlist
                 </button>
+
+                {status === "success" && (
+                  <p className="mt-4 text-center text-sm text-green-400">
+                    You're on the list. We’ll let you know when the next London drop is ready.
+                  </p>
+                )}
               </form>
             </div>
           </div>

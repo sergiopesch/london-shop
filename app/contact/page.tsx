@@ -1,8 +1,13 @@
+"use client"
+
 import { ResponsiveNav } from "@/components/responsive-nav"
 import { SiteFooter } from "@/components/site-footer"
 import { Mail, MapPin, Phone } from "lucide-react"
+import { useState } from "react"
 
 export default function ContactPage() {
+  const [status, setStatus] = useState<"idle" | "success">("idle")
+
   return (
     <>
       <ResponsiveNav />
@@ -46,7 +51,13 @@ export default function ContactPage() {
             </div>
 
             <div>
-              <form className="space-y-4">
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  setStatus("success")
+                }}
+              >
                 <div>
                   <label htmlFor="name" className="block text-white mb-2">
                     Name
@@ -54,6 +65,7 @@ export default function ContactPage() {
                   <input
                     type="text"
                     id="name"
+                    required
                     className="w-full bg-gray-800 border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                   />
                 </div>
@@ -65,6 +77,7 @@ export default function ContactPage() {
                   <input
                     type="email"
                     id="email"
+                    required
                     className="w-full bg-gray-800 border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                   />
                 </div>
@@ -76,6 +89,7 @@ export default function ContactPage() {
                   <textarea
                     id="message"
                     rows={4}
+                    required
                     className="w-full bg-gray-800 border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                   ></textarea>
                 </div>
@@ -86,6 +100,10 @@ export default function ContactPage() {
                 >
                   Send Message
                 </button>
+
+                {status === "success" && (
+                  <p className="text-sm text-green-400">Thanks — your message has been received. We’ll be in touch soon.</p>
+                )}
               </form>
             </div>
           </div>

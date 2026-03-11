@@ -31,9 +31,6 @@ export function SiteFooter() {
           <Link href="/terms" className="text-gray-400 hover:text-white transition-colors text-sm">
             Terms
           </Link>
-          <Link href="/admin" className="text-gray-400 hover:text-white transition-colors text-sm">
-            Admin
-          </Link>
         </div>
 
         <p className="text-gray-500 text-xs">&copy; {new Date().getFullYear()} londonshop.ai</p>
