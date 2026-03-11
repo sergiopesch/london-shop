@@ -1,9 +1,9 @@
 import { ResponsiveNav } from "@/components/responsive-nav"
 import { SiteFooter } from "@/components/site-footer"
 import Link from "next/link"
-import Image from "next/image"
 import { notFound } from "next/navigation"
 import { getProductsByCategory, getCategories } from "@/lib/products"
+import { LoadingImage } from "@/components/loading-image"
 
 export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
   const { category } = await params
@@ -43,13 +43,15 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
             {products.map((product) => (
               <Link key={product.id} href={`/shop/${category}/${product.slug}`} className="group">
                 <div className="flex flex-col">
-                  <div className="relative aspect-square rounded-lg overflow-hidden mb-3 group-hover:shadow-lg transition-all duration-300">
-                    <Image
+                  <div className="relative aspect-square rounded-lg overflow-hidden mb-3 group-hover:shadow-lg transition-all duration-300 shadow-xl">
+                    <LoadingImage
                       src={product.imageSrc || "/placeholder.svg?height=400&width=400"}
                       alt={product.name}
                       fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                     />
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/5 transition-opacity"></div>
                   </div>
                   <h3 className="text-white font-medium text-center">{product.name}</h3>
                   <p className="text-red-500 text-center">£{product.price.toFixed(2)}</p>
