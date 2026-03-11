@@ -38,8 +38,8 @@ export default function ShopPage() {
         </div>
 
         {/* Content overlay */}
-        <div className="relative z-10 pt-28 px-4 md:px-8 pb-12">
-          <div className="max-w-6xl mx-auto">
+        <div className="relative z-10 min-h-screen flex items-center pt-28 px-4 md:px-8 pb-20 sm:pb-24">
+          <div className="max-w-6xl mx-auto w-full">
             {/* Hero Section - improved for mobile */}
             <div className="text-center mb-12 sm:mb-16 mt-4 sm:mt-8 animate-fade-in">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 text-white">
@@ -51,7 +51,7 @@ export default function ShopPage() {
             </div>
 
             {/* Categories Section - styled like the home page */}
-            <section className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 max-w-6xl mx-auto mb-16">
+            <section className="grid grid-cols-2 md:grid-cols-4 gap-5 sm:gap-8 max-w-6xl mx-auto">
               {categories.map((category, index) => (
                 <Link
                   key={category.slug}

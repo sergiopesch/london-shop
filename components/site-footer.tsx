@@ -10,7 +10,7 @@ export function SiteFooter() {
           <LondonLogo />
         </div>
 
-        <p className="text-gray-300 text-sm mb-4">Designed and printed in Great Britain</p>
+        <p className="text-gray-300 text-sm mb-4">Designed and printed in London, Great Britain</p>
 
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-6">
           <Link href="/" className="text-gray-400 hover:text-white transition-colors text-sm">

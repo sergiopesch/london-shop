@@ -24,7 +24,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
   return (
     <>
       <ResponsiveNav />
-      <main className="bg-gray-900 pt-20 px-4 md:px-8 pb-12">
+      <main className="bg-gray-900 pt-20 px-4 md:px-8 pb-16 min-h-screen">
         <div className="max-w-6xl mx-auto">
           {/* Breadcrumbs */}
           <nav className="flex items-center text-sm text-gray-400 my-4">

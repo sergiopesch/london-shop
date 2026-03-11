@@ -36,6 +36,13 @@ export const supabase = new Proxy({} as SupabaseClient, {
           signInWithPassword: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
           signOut: async () => ({ error: null }),
           getSession: async () => ({ data: { session: null }, error: null }),
+          onAuthStateChange: () => ({
+            data: {
+              subscription: {
+                unsubscribe: () => {},
+              },
+            },
+          }),
         }
       }
       return () => {}
