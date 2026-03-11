@@ -31,13 +31,19 @@ body {
   text-rendering: optimizeSpeed;
 }
 
+a,
+button,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Optimize image rendering */
 img {
   image-rendering: auto;
   max-width: 100%;
   height: auto;
-  /* Prevent layout shifts */
-  content-visibility: auto;
 }
 
 /* Optimize transitions */

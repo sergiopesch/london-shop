@@ -86,7 +86,10 @@ export function ResponsiveNav() {
   const isActive = useCallback(
     (path: string) => {
       if (path === "/" && pathname !== "/") return false
-      return pathname.startsWith(path)
+      if (path === "/shop") {
+        return pathname === "/shop" || pathname.startsWith("/shop/")
+      }
+      return pathname === path
     },
     [pathname],
   )
