@@ -3,9 +3,10 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { verifyAdminPassword } from "./admin-credentials"
-import { ADMIN_COOKIE, COOKIE_OPTIONS, createAdminSession } from "./admin-session"
+import { ADMIN_COOKIE, COOKIE_OPTIONS, ADMIN_UNAVAILABLE_MESSAGE, adminAuthConfigured, createAdminSession } from "./admin-session"
 
 export async function loginAdmin(formData: FormData) {
+  if (!adminAuthConfigured()) return { success: false, message: ADMIN_UNAVAILABLE_MESSAGE }
   try {
     const password = formData.get("password")
 
@@ -39,6 +40,7 @@ export async function loginAdmin(formData: FormData) {
 }
 
 export async function logoutAdmin() {
+  if (!adminAuthConfigured()) return
   try {
     const cookieStore = await cookies()
     cookieStore.delete(ADMIN_COOKIE)

@@ -37,11 +37,9 @@ jobs:
         run: pnpm run lint
       - name: Test
         run: pnpm test
-      - name: Test production configuration preflight
-        run: node --test tests/admin-build-preflight.node.mjs
+      - name: Test admin authentication and disabled configuration
+        run: node --experimental-vm-modules tests/admin-auth.node.mjs
+      - name: Test public production build and admin availability
+        run: node tests/admin-availability.node.mjs
       - name: Build
-        env:
-          # Non-production fixtures apply only to this CI build, never Vercel deployments.
-          ADMIN_PASSWORD: ci-build-fixture-not-for-deployment
-          ADMIN_SESSION_SECRET: ci-build-session-fixture-not-for-deployment
         run: pnpm run build

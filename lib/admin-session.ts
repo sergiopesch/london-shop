@@ -8,8 +8,14 @@ export const COOKIE_OPTIONS = {
   sameSite: "strict" as const,
 }
 
+export const ADMIN_UNAVAILABLE_MESSAGE = "Administration is unavailable. Contact the site owner."
+
 export function adminAuthConfigured(): boolean {
-  return Boolean(process.env.ADMIN_PASSWORD && (process.env.ADMIN_SESSION_SECRET?.length ?? 0) >= 32)
+  const password = process.env.ADMIN_PASSWORD
+  const secret = process.env.ADMIN_SESSION_SECRET
+  return typeof password === "string" && Boolean(password.trim()) &&
+    typeof secret === "string" && secret.length >= 32 && Boolean(secret.trim()) &&
+    secret !== password
 }
 
 async function signingKey(): Promise<CryptoKey> {

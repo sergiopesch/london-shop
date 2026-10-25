@@ -1,6 +1,12 @@
+import { ADMIN_UNAVAILABLE_MESSAGE, adminAuthConfigured } from "@/lib/admin-session"
 import { NextResponse } from "next/server"
 
 export async function POST() {
+  if (!adminAuthConfigured()) {
+    return NextResponse.json({ success: false, message: ADMIN_UNAVAILABLE_MESSAGE }, {
+      status: 503, headers: { "Cache-Control": "no-store" },
+    })
+  }
   // Create a response
   const response = NextResponse.json({ success: true })
 

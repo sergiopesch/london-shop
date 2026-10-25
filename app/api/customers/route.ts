@@ -1,8 +1,14 @@
+import { ADMIN_UNAVAILABLE_MESSAGE, adminAuthConfigured } from "@/lib/admin-session"
 import { checkAdminSession } from "@/lib/admin-auth"
 import { NextResponse } from "next/server"
 import { getAllCustomers } from "@/lib/supabase"
 
 export async function GET() {
+  if (!adminAuthConfigured()) {
+    return NextResponse.json({ success: false, message: ADMIN_UNAVAILABLE_MESSAGE }, {
+      status: 503, headers: { "Cache-Control": "no-store" },
+    })
+  }
   if (!(await checkAdminSession())) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
   }
