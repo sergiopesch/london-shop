@@ -1,3 +1,4 @@
+import { checkAdminSession } from "@/lib/admin-auth"
 import { NextResponse } from "next/server"
 import { getAllFeedback, saveFeedback, saveCustomer } from "@/lib/supabase"
 
@@ -44,6 +45,9 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
+  if (!(await checkAdminSession())) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
+  }
   try {
     // Get feedback from Supabase
     const feedback = await getAllFeedback()

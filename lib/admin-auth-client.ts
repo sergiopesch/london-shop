@@ -1,14 +1,14 @@
 "use client"
 
 // Simple client-side check for admin authentication
-export function isAdminLoggedIn(): boolean {
-  // Check if we're in a browser environment
-  if (typeof window === "undefined") {
+export async function isAdminLoggedIn(): Promise<boolean> {
+  if (typeof window === "undefined") return false
+  try {
+    const response = await fetch("/api/admin/check", { cache: "no-store", credentials: "same-origin" })
+    return response.ok && (await response.json()).authenticated === true
+  } catch {
     return false
   }
-
-  // Check for the presence of the admin cookie
-  return document.cookie.includes("london-shop-admin-session=authenticated")
 }
 
 // Logout function for client-side use

@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { ADMIN_COOKIE, isAdminRouteExempt } from "@/lib/admin-config"
+import { isAdminRouteExempt } from "@/lib/admin-config"
+import { ADMIN_COOKIE, verifyAdminSession } from "@/lib/admin-session"
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (isAdminRouteExempt(pathname)) {
     return NextResponse.next()
   }
 
-  const isAuthenticated = request.cookies.get(ADMIN_COOKIE)?.value === "authenticated"
+  const isAuthenticated = await verifyAdminSession(request.cookies.get(ADMIN_COOKIE)?.value)
 
   if (pathname.startsWith("/admin") && !isAuthenticated) {
     const loginUrl = new URL("/admin/login", request.url)

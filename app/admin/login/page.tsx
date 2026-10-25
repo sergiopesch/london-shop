@@ -6,7 +6,8 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { LondonLogo } from "@/components/london-logo"
-import { setAdminAuth, checkAdminAuth } from "@/lib/client-auth"
+import { isAdminLoggedIn } from "@/lib/admin-auth-client"
+import { validateAdminPassword } from "@/lib/admin-cookie"
 
 export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null)
@@ -15,9 +16,9 @@ export default function AdminLoginPage() {
 
   // Check if already logged in
   useEffect(() => {
-    if (checkAdminAuth()) {
-      router.push("/admin")
-    }
+    void isAdminLoggedIn().then((authenticated) => {
+      if (authenticated) router.push("/admin")
+    })
   }, [router])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -29,14 +30,9 @@ export default function AdminLoginPage() {
       const formData = new FormData(e.target as HTMLFormElement)
       const password = formData.get("password") as string
 
-      // Simple password check
-      if (password === "london-shop-admin") {
-        console.log("Password verified, setting auth")
-        setAdminAuth()
-
-        // Redirect to admin dashboard
-        console.log("Login successful, redirecting to admin dashboard")
+      if (await validateAdminPassword(password)) {
         router.push("/admin")
+        router.refresh()
       } else {
         console.error("Login failed: Invalid password")
         setError("Invalid password")
@@ -78,7 +74,6 @@ export default function AdminLoginPage() {
                   placeholder="Enter admin password"
                   required
                 />
-                <p className="mt-1 text-xs text-gray-500">Default: london-shop-admin</p>
               </div>
 
               <button

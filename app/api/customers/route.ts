@@ -1,7 +1,11 @@
+import { checkAdminSession } from "@/lib/admin-auth"
 import { NextResponse } from "next/server"
 import { getAllCustomers } from "@/lib/supabase"
 
 export async function GET() {
+  if (!(await checkAdminSession())) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
+  }
   try {
     // Get customers from Supabase
     const customers = await getAllCustomers()
