@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server"
-import { cookies } from "next/headers"
+import { checkAdminSession } from "@/lib/admin-auth"
 
 export async function GET() {
-  const cookieStore = await cookies()
-  const adminCookie = cookieStore.get("london-shop-admin-session")
-
-  if (!adminCookie || adminCookie.value !== "authenticated") {
-    return NextResponse.json({ authenticated: false }, { status: 401 })
-  }
-
-  return NextResponse.json({ authenticated: true })
+  const authenticated = await checkAdminSession()
+  return NextResponse.json({ authenticated }, {
+    status: authenticated ? 200 : 401,
+    headers: { "Cache-Control": "no-store" },
+  })
 }
-

@@ -48,7 +48,7 @@ export default function AdminLoginForm() {
             required
           />
           <p className="mt-1 text-xs text-gray-500">
-            Set ADMIN_PASSWORD in .env.local. The built-in default is for local development only.
+            Configure ADMIN_PASSWORD and ADMIN_SESSION_SECRET in the server environment.
           </p>
         </div>
 

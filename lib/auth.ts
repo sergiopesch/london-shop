@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { ADMIN_COOKIE, COOKIE_OPTIONS } from "./admin-config"
+import { ADMIN_COOKIE, COOKIE_OPTIONS, createAdminSession, verifyAdminSession } from "./admin-session"
 import { verifyAdminPassword } from "./admin-credentials"
 
 export async function loginAdmin(formData: FormData) {
@@ -13,13 +13,13 @@ export async function loginAdmin(formData: FormData) {
       return { success: false, message: "Password is required" }
     }
 
-    if (!verifyAdminPassword(password)) {
+    if (!(await verifyAdminPassword(password))) {
       return { success: false, message: "Invalid password" }
     }
 
     try {
       const cookieStore = await cookies()
-      cookieStore.set(ADMIN_COOKIE, "authenticated", COOKIE_OPTIONS)
+      cookieStore.set(ADMIN_COOKIE, await createAdminSession(), COOKIE_OPTIONS)
     } catch (cookieError) {
       console.error("Error setting cookie:", cookieError)
       return {
@@ -51,7 +51,7 @@ export async function logoutAdmin() {
 export async function isAdminAuthenticated(): Promise<boolean> {
   try {
     const cookieStore = await cookies()
-    return cookieStore.get(ADMIN_COOKIE)?.value === "authenticated"
+    return verifyAdminSession(cookieStore.get(ADMIN_COOKIE)?.value)
   } catch (error) {
     console.error("Authentication check error:", error)
     return false

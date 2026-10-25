@@ -3,12 +3,12 @@
 import { cookies } from "next/headers"
 
 // Cookie name for admin session
-const ADMIN_COOKIE = "london-shop-admin-session"
+import { ADMIN_COOKIE, verifyAdminSession } from "./admin-session"
 
 // Check if admin is authenticated (server-side)
 export async function checkAdminSession(): Promise<boolean> {
   const cookieStore = await cookies()
-  return cookieStore.get(ADMIN_COOKIE)?.value === "authenticated"
+  return verifyAdminSession(cookieStore.get(ADMIN_COOKIE)?.value)
 }
 
 // Clear admin session cookie (server action)
