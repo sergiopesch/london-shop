@@ -1,3 +1,6 @@
+import nextConstants from "next/constants.js"
+import { assertAdminBuildConfiguration } from "./scripts/admin-build-preflight.mjs"
+
 let userConfig = undefined
 try {
   userConfig = await import('./v0-user-next.config')
@@ -42,4 +45,9 @@ function mergeConfig(nextConfig, userConfig) {
   }
 }
 
-export default nextConfig
+export default function configuredNextBuild(phase) {
+  if (phase === nextConstants.PHASE_PRODUCTION_BUILD) {
+    assertAdminBuildConfiguration()
+  }
+  return nextConfig
+}
