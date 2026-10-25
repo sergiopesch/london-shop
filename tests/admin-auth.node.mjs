@@ -9,6 +9,7 @@ import ts from "typescript"
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const jar = new Map()
 let dataReads = 0
+let cookieWrites = 0
 let now = Date.now()
 class Clock extends Date { static now() { return now } }
 const env = {
@@ -17,7 +18,7 @@ const env = {
   ADMIN_SESSION_SECRET: "synthetic-test-session-secret-at-least-32-characters",
 }
 class MockResponse extends Response {
-  cookies = { set: (name, value, options) => { this.cookie = { name, value, options } } }
+  cookies = { set: (name, value, options) => { cookieWrites++; this.cookie = { name, value, options } } }
   static json(body, options) { return new MockResponse(JSON.stringify(body), options) }
   static next() { return new MockResponse(null, { status: 200 }) }
   static redirect(url) { return new MockResponse(null, { status: 307, headers: { Location: String(url) } }) }
@@ -57,7 +58,7 @@ async function load(filename) {
     if (specifier === "next/server") exports = { NextResponse: MockResponse }
     if (specifier === "next/headers") exports = { cookies: async () => ({
       get: (name) => jar.has(name) ? { value: jar.get(name) } : undefined,
-      set: (name, value) => jar.set(name, value), delete: (name) => jar.delete(name),
+      set: (name, value) => { cookieWrites++; jar.set(name, value) }, delete: (name) => { cookieWrites++; jar.delete(name) },
     }) }
     if (specifier === "next/navigation") exports = {
       redirect: (url) => { throw new Error(`redirect:${url}`) },
@@ -171,12 +172,65 @@ await loginForm.props.onSubmit({ preventDefault() {}, target: { password: env.AD
 assert.equal(await session.verifyAdminSession(jar.get(session.ADMIN_COOKIE)), true)
 assert.ok(navigation.includes("/admin"))
 const authenticatedJar = jar.get(session.ADMIN_COOKIE)
-env.ADMIN_SESSION_SECRET = "short"
-assert.equal(await session.verifyAdminSession(authenticatedJar), false)
-assert.equal((await login.POST(request(env.ADMIN_PASSWORD))).status, 503)
-env.ADMIN_SESSION_SECRET = secret
-delete env.ADMIN_PASSWORD
-assert.equal((await login.POST(request("synthetic-test-password"))).status, 503)
-assert.equal(await session.verifyAdminPassword("synthetic-test-password"), false)
-
-console.log("Admin auth regression checks passed: forged/tampered/expired/rotated cookies, fail-closed config, real login/server actions, protected reads, middleware, HttpOnly settings")
+const validConfiguration = { ADMIN_PASSWORD: env.ADMIN_PASSWORD, ADMIN_SESSION_SECRET: env.ADMIN_SESSION_SECRET }
+const logout = await namespace("app/api/admin/logout/route.ts")
+const adminAuth = await namespace("lib/admin-auth.ts")
+const disabledConfigurations = [
+  {},
+  { ADMIN_SESSION_SECRET: validConfiguration.ADMIN_SESSION_SECRET },
+  { ADMIN_PASSWORD: validConfiguration.ADMIN_PASSWORD },
+  { ...validConfiguration, ADMIN_PASSWORD: "   " },
+  { ...validConfiguration, ADMIN_SESSION_SECRET: " ".repeat(32) },
+  { ...validConfiguration, ADMIN_SESSION_SECRET: "x".repeat(31) },
+  { ADMIN_PASSWORD: validConfiguration.ADMIN_SESSION_SECRET, ADMIN_SESSION_SECRET: validConfiguration.ADMIN_SESSION_SECRET },
+]
+const protectedPaths = ["/admin", "/admin/login", "/admin/settings", "/admin/customers", "/admin/feedback",
+  "/admin/simple-login", "/admin/direct-login", "/admin/cookie-debug", "/admin/cookie-test",
+  "/admin%2fsettings", "/admin%2Fsettings",
+  "/api/admin/login", "/api/admin/check", "/api/admin/logout", "/api/admin/cookie-debug"]
+assert.ok(Array.from(middleware.config.matcher).includes("/api/admin/:path*"), "admin APIs are covered before route handlers")
+for (const invalid of disabledConfigurations) {
+  delete env.ADMIN_PASSWORD
+  delete env.ADMIN_SESSION_SECRET
+  Object.assign(env, invalid)
+  jar.set(session.ADMIN_COOKIE, authenticatedJar)
+  const readsBefore = dataReads
+  const writesBefore = cookieWrites
+  assert.equal(session.adminAuthConfigured(), false)
+  assert.equal(await session.verifyAdminSession(authenticatedJar), false, "old signed token rejected after invalid configuration")
+  assert.equal(await session.verifyAdminPassword(invalid.ADMIN_PASSWORD || validConfiguration.ADMIN_PASSWORD), false)
+  await assert.rejects(session.createAdminSession(), /not configured/)
+  assert.equal(await auth.isAdminAuthenticated(), false)
+  assert.equal((await login.POST(request(invalid.ADMIN_PASSWORD || validConfiguration.ADMIN_PASSWORD))).status, 503)
+  for (const handler of [check, feedback, customers, logout]) {
+    const response = await (handler.GET || handler.POST)()
+    assert.equal(response.status, 503)
+    assert.equal(response.headers.get("Cache-Control"), "no-store")
+    assert.equal(response.cookie, undefined)
+    assert.equal((await response.json()).message, session.ADMIN_UNAVAILABLE_MESSAGE)
+  }
+  for (const pathname of protectedPaths) {
+    const request = middlewareRequest()
+    request.nextUrl.pathname = pathname
+    request.url = `https://shop.invalid${pathname}`
+    const unavailable = await middleware.middleware(request)
+    assert.equal(unavailable.status, 503, `${pathname} remains disabled`)
+    assert.equal(unavailable.headers.get("Cache-Control"), "no-store")
+    assert.equal(unavailable.cookie, undefined)
+    const body = await unavailable.text()
+    assert.ok(body.includes(session.ADMIN_UNAVAILABLE_MESSAGE))
+    assert.ok(!body.includes("ADMIN_PASSWORD") && !body.includes("ADMIN_SESSION_SECRET"))
+  }
+  assert.equal((await actions.loginAdmin(form)).success, false)
+  assert.equal((await auth.loginAdmin(form)).success, false)
+  await actions.logoutAdmin()
+  await auth.logoutAdmin()
+  await adminAuth.clearAdminSession()
+  assert.equal(dataReads, readsBefore, "disabled requests do not read private data")
+  assert.equal(cookieWrites, writesBefore, "disabled APIs/actions do not issue or mutate cookies")
+}
+Object.assign(env, validConfiguration)
+assert.equal(session.adminAuthConfigured(), true)
+assert.equal(await session.verifyAdminSession(authenticatedJar), true, "unchanged valid configuration preserves issued sessions")
+assert.equal((await login.POST(request(env.ADMIN_PASSWORD))).status, 200)
+console.log("Admin auth regression checks passed: legitimate login, signed-session forgery/expiry/rotation, seven invalid configuration states, old-token rejection, all admin page/API aliases, private reads and cookie-free disabled server actions")

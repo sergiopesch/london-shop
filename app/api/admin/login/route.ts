@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
-import { ADMIN_COOKIE, COOKIE_OPTIONS, adminAuthConfigured, createAdminSession, verifyAdminPassword } from "@/lib/admin-session"
+import { ADMIN_COOKIE, COOKIE_OPTIONS, ADMIN_UNAVAILABLE_MESSAGE, adminAuthConfigured, createAdminSession, verifyAdminPassword } from "@/lib/admin-session"
 
 export async function POST(request: Request) {
   if (!adminAuthConfigured()) {
-    return NextResponse.json({ success: false, message: "Admin authentication is not configured" }, { status: 503 })
+    return NextResponse.json({ success: false, message: ADMIN_UNAVAILABLE_MESSAGE }, { status: 503, headers: { "Cache-Control": "no-store" } })
   }
   try {
     const { password } = await request.json()

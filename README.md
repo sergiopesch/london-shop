@@ -108,14 +108,15 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 
 # Admin credentials
-# Set strong values in production. If omitted, the app falls back to development defaults.
+# Administration stays disabled until both independent server-only values are valid.
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=change-me-before-production
+ADMIN_PASSWORD=
+ADMIN_SESSION_SECRET=
 ```
 
 **Note**: The app functions without Supabase - it will return empty arrays for database queries.
 
-**Security note**: Set `ADMIN_PASSWORD` in `.env.local` for any real deployment. The code retains a development fallback only to avoid breaking local behaviour, and it should not be relied on in production.
+**Security note**: There is no development password or session-key fallback. The public shop remains available without admin credentials; administration returns 503 until valid independent server-only credentials are configured. See [admin authentication setup](docs/admin-auth.md).
 
 ## Admin Dashboard
 
