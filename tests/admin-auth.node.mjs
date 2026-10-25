@@ -50,9 +50,9 @@ async function load(filename) {
   const output = ts.transpileModule(source, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, jsx: ts.JsxEmit.ReactJSX },
   }).outputText
-  const module = new vm.SourceTextModule(output, { context, identifier: filename })
-  cache.set(filename, module)
-  await module.link(async (specifier, parent) => {
+  const sourceModule = new vm.SourceTextModule(output, { context, identifier: filename })
+  cache.set(filename, sourceModule)
+  await sourceModule.link(async (specifier, parent) => {
     let exports
     if (specifier === "next/server") exports = { NextResponse: MockResponse }
     if (specifier === "next/headers") exports = { cookies: async () => ({
@@ -79,12 +79,12 @@ async function load(filename) {
     const target = specifier.startsWith("@/") ? path.join(root, specifier.slice(2)) : path.resolve(path.dirname(parent.identifier), specifier)
     return load(`${target}.ts`)
   })
-  return module
+  return sourceModule
 }
 async function namespace(relative) {
-  const module = await load(path.join(root, relative))
-  if (module.status !== "evaluated") await module.evaluate()
-  return module.namespace
+  const sourceModule = await load(path.join(root, relative))
+  if (sourceModule.status !== "evaluated") await sourceModule.evaluate()
+  return sourceModule.namespace
 }
 const session = await namespace("lib/admin-session.ts")
 const login = await namespace("app/api/admin/login/route.ts")
